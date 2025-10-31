@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heritage Hub • FINAL</title>
+    <style>
+        :root {
+            --bg-light: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --text-light: #333;
+            --text-dark: #e0e0e0;
+            --card-light: white;
+            --card-dark: #2d2d44;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0;
+            background: var(--bg-light);
+            color: var(--text-light);
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+        body.dark {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            position: relative;
+        }
+        h1 { margin: 0; font-size: 2.5em; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+        .dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px; height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .dark-mode-toggle:hover { background: rgba(255,255,255,0.4); }
+
+        .search-container {
+            margin: 20px auto;
+            text-align: center;
+            max-width: 600px;
+        }
+        #searchInput {
+            padding: 14px;
+            width: 70%;
+            max-width: 400px;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+        body.dark #searchInput { border-color: #555; background: #333; color: #fff; }
+        button {
+            padding: 14px 18px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #ff5252; }
+        .highlight { background-color: #fff3cd; padding: 2px; border-radius: 3px; }
+        body.dark .highlight { background-color: #ffd93d; color: #000; }
+
+        .monuments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: var(--card-light);
+        }
+        body.dark .card { background: var(--card-dark); }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
+        .card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            border-bottom: 3px solid #ddd;
+        }
+        body.dark .card img { border-color: #444; }
+
+        .card h3 {
+            margin: 12px 14px 6px;
+            font-size: 1.35em;
+            font-weight: 700;
+        }
+        .card p {
+            margin: 0 14px 12px;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        .quiz-btn {
+            margin: 12px;
+            padding: 10px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            width: calc(100% - 24px);
+            transition: 0.3s;
+        }
+        .quiz-btn:hover { background: #5f3dc4; }
+
+        /* Monument Colors */
+        .taj h3, .taj p { color: #000000 !important; }
+        .qutub h3, .qutub p { color: #8B4513 !important; }
+        .redfort h3, .redfort p { color: #c62828 !important; }
+        .hampi h3, .hampi p { color: #8B7355 !important; }
+        .khajuraho h3, .khajuraho p { color: #DAA520 !important; }
+        .ajanta h3, .ajanta p { color: #4B0082 !important; }
+        .ellora h3, .ellora p { color: #2F4F4F !important; }
+        .konark h3, .konark p { color: #000080 !important; }
+        .jantar h3, .jantar p { color: #FF8C00 !important; }
+        .fatehpur h3, .fatehpur p { color: #B22222 !important; }
+        .mahabodhi h3, .mahabodhi p { color: #FFD700 !important; }
+        .victoria h3, .victoria p { color: #4682B4 !important; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            width: 90%; max-width: 520px;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        body.dark .modal-content { background: #2d2d44; color: #e0e0e0; }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .close:hover { color: #000; }
+        body.dark .close:hover { color: #fff; }
+
+        #quizResult { margin-top: 20px; font-size: 1.3em; font-weight: bold; }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: white;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+            .monuments-grid { grid-template-columns: 1fr; padding: 15px; }
+            h1 { font-size: 2em; }
+            .dark-mode-toggle { top: 15px; right: 15px; width: 45px; height: 45px; font-size: 1.3em; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Heritage Hub • FINAL</h1>
+        <p>12 UNESCO Sites • Offline • Fixed</p>
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">Dark Mode</button>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search Taj, Red Fort...">
+        <button onclick="searchPage()">Search</button>
+    </div>
+
+    <div class="monuments-grid" id="content">
+        <!-- TAJ MAHAL -->
+        <div class="card taj">
+            <img src="tajmahal.jpg" alt="Taj Mahal">
+            <h3>Taj Mahal</h3>
+            <p>Agra | 1632–1653 | White marble love story</p>
+            <button class="quiz-btn" data-monument="Taj Mahal">Quiz Me</button>
+        </div>
+
+        <!-- QUTUB MINAR -->
+        <div class="card qutub">
+            <img src="qutubminar.jpg" alt="Qutub Minar">
+            <h3>Qutub Minar</h3>
+            <p>Delhi | 1193 | Tallest brick minaret
+                              </p>
+            <button class="quiz-btn" data-monument="Qutub Minar">Quiz Me</button>
+        </div>
+
+        <!-- RED FORT -->
+        <div class="card redfort">
+            <img src="redfort.jpg" alt="Red Fort">
+            <h3>Red Fort</h3>
+            <p>Delhi | 1648 | Mughal power symbol</p>
+            <button class="quiz-btn" data-monument="Red Fort">Quiz Me</button>
+        </div>
+
+        <!-- HAMPI -->
+        <div class="card hampi">
+            <img src="hampi.jpg" alt="Hampi">
+            <h3>Hampi</h3>
+            <p>Karnataka | 14th C | Vijayanagara ruins</p>
+            <button class="quiz-btn" data-monument="Hampi">Quiz Me</button>
+        </div>
+
+        <!-- KHAJURAHO -->
+        <div class="card khajuraho">
+            <img src="khaj.jpg" alt="Khajuraho">
+            <h3>Khajuraho</h3>
+            <p>MP | 950–1050 | Erotic temples</p>
+            <button class="quiz-btn" data-monument="Khajuraho">Quiz Me</button>
+        </div>
+
+        <!-- AJANTA CAVES -->
+        <div class="card ajanta">
+            <img src="ajanta.jpg" alt="Ajanta Caves">
+            <h3>Ajanta Caves</h3>
+            <p>Maharashtra | 2nd C BCE | Buddhist art</p>
+            <button class="quiz-btn" data-monument="Ajanta Caves">Quiz Me</button>
+        </div>
+
+        <!-- ELLORA CAVES -->
+        <div class="card ellora">
+            <img src="ellora.jpg" alt="Ellora Caves">
+            <h3>Ellora Caves</h3>
+            <p>Maharashtra | 600–1000 | Rock-cut wonder</p>
+            <button class="quiz-btn" data-monument="Ellora Caves">Quiz Me</button>
+        </div>
+
+        <!-- KONARK -->
+        <div class="card konark">
+            <img src="konark.jpg" alt="Konark Sun Temple">
+            <h3>Konark Sun Temple</h3>
+            <p>Odisha | 13th C | Sun chariot</p>
+            <button class="quiz-btn" data-monument="Konark Sun Temple">Quiz Me</button>
+        </div>
+
+        <!-- JANTAR MANTAR -->
+        <div class="card jantar">
+            <img src="jantarman.jpg" alt="Jantar Mantar">
+            <h3>Jantar Mantar</h3>
+            <p>Jaipur | 1734 | Astronomical observatory</p>
+            <button class="quiz-btn" data-monument="Jantar Mantar">Quiz Me</button>
+        </div>
+
+        <!-- FATEHPUR SIKRI -->
+        <div class="card fatehpur">
+            <img src="fatehpur.jpg" alt="Fatehpur Sikri">
+            <h3>Fatehpur Sikri</h3>
+            <p>UP | 1571 | Akbar's ghost city</p>
+            <button class="quiz-btn" data-monument="Fatehpur Sikri">Quiz Me</button>
+        </div>
+
+        <!-- MAHABODHI TEMPLE -->
+        <div class="card mahabodhi">
+            <img src="mahod.jpg" alt="Mahabodhi Temple">
+            <h3>Mahabodhi Temple</h3>
+            <p>Bodh Gaya | 5th C | Buddha's enlightenment</p>
+            <button class="quiz-btn" data-monument="Mahabodhi Temple">Quiz Me</button>
+        </div>
+    </div>
+
+    <!-- QUIZ MODAL -->
+    <div id="quizModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">×</span>
+            <h2 id="quizTitle">Quiz</h2>
+            <div id="quizQuestions"></div>
+            <button id="submitQuiz" onclick="submitQuiz()">Submit & Score</button>
+            <p id="quizResult"></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Built by Hasini | 100% Offline | FINAL VERSION</p>
+    </footer>
+
+    <script>
+        // Dark Mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            document.querySelector('.dark-mode-toggle').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.querySelector('.dark-mode-toggle').textContent = 'Light Mode';
+        }
+
+        // Search
+        function searchPage() {
+            let query = document.getElementById("searchInput").value.toLowerCase().trim();
+            let content = document.querySelectorAll("#content h3, #content p");
+            document.querySelectorAll(".highlight").forEach(el => el.outerHTML = el.innerHTML);
+            if (!query) return;
+            let found = false;
+            content.forEach(el => {
+                if (el.textContent.toLowerCase().includes(query)) {
+                    found = true;
+                    let regex = new RegExp((${query}), "gi");
+                    el.innerHTML = el.innerHTML.replace(regex, <span class="highlight">$1</span>);
+                }
+            });
+            if (!found) alert(No results for "${query}");
+        }
+        document.getElementById("searchInput").addEventListener("keypress", e => {
+            if (e.key === "Enter") searchPage();
+        });
+
+        // Quiz Logic
+        let currentQuiz = null;
+
+        document.querySelectorAll(".quiz-btn").forEach(btn => {
+            btn.addEventListener("click", function() {
+                currentQuiz = this.getAttribute("data-monument");
+                startQuiz(currentQuiz);
+            });
+        });
+
+        function startQuiz(monument) {
+            document.getElementById("quizTitle").textContent = monument + " Quiz";
+            const qDiv = document.getElementById("quizQuestions");
+            qDiv.innerHTML = "";
+            quizzes[monument].forEach((item, i) => {
+                let opts = item.options.map((opt, j) =>
+                    <label style="display:block; margin:8px 0;"><input type="radio" name="q${i}" value="${j}"> ${opt}</label>
+                ).join("");
+                qDiv.innerHTML += <p><strong>Q${i+1}:</strong> ${item.q}<br>${opts}</p><hr>;
+            });
+            document.getElementById("quizResult").textContent = "";
+            document.getElementById("quizModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("quizModal").style.display = "none";
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            quizzes[currentQuiz].forEach((item, i) => {
+                let sel = document.querySelector(input[name="q${i}"]:checked);
+                if (sel && parseInt(sel.value) === item.a) score++;
+            });
+            let total = quizzes[currentQuiz].length;
+            let emoji = score === total ? "Perfect!" : score >= total*0.6 ? "Great!" : "Keep Learning!";
+            document.getElementById("quizResult").innerHTML = Score: <strong>${score}/${total}</strong> ${emoji};
+        }
+
+        // Close modal on outside click
+        window.addEventListener("click", function(e) {
+            const modal = document.getElementById("quizModal");
+            if (e.target === modal) closeModal();
+        });
+
+        // Quizzes Data
+        const quizzes = {
+            "Taj Mahal": [
+                {q: "Built for?", options: ["Mumtaz Mahal", "Noor Jahan", "Jodha Bai"], a: 0},
+                {q: "Material?", options: ["Red Stone", "White Marble", "Granite"], a: 1},
+                {q: "Gardens represent?", options: ["Paradise", "War", "Trade"], a: 0}
+            ],
+            "Qutub Minar": [
+                {q: "Started by?", options: ["Iltutmish", "Qutub-ud-din Aibak", "Alauddin"], a: 1},
+                {q: "Height?", options: ["73m", "100m", "50m"], a: 0},
+                {q: "Iron Pillar is?", options: ["Rustproof", "Gold-plated", "Wooden"], a: 0}
+            ],
+            "Red Fort": [
+                {q: "Built by?", options: ["Akbar", "Shah Jahan", "Aurangzeb"], a: 1},
+                {q: "Original name?", options: ["Qila-e-Mubarak", "Lal Qila", "Agra Fort"], a: 0},
+                {q: "Independence speech from?", options: ["Diwan-i-Khas", "Red Fort ramparts", "Jama Masjid"], a: 1}
+            ],
+            "Hampi": [
+                {q: "Empire?", options: ["Chola", "Vijayanagara", "Pallava"], a: 1},
+                {q: "Famous temple?", options: ["Virupaksha", "Meenakshi", "Konark"], a: 0},
+                {q: "UNESCO?", options: ["1986", "2000", "2015"], a: 0}
+            ],
+            "Khajuraho": [
+                {q: "Dynasty?", options: ["Chandela", "Gupta", "Maurya"], a: 0},
+                {q: "Famous for?", options: ["Erotic art", "Astronomy", "War"], a: 0},
+                {q: "Original temples?", options: ["85", "22", "50"], a: 0}
+            ],
+            "Ajanta Caves": [
+                {q: "Art form?", options: ["Fresco", "Sculpture", "Mosaic"], a: 0},
+                {q: "Religion?", options: ["Hindu", "Buddhist", "Jain"], a: 1},
+                {q: "Caves?", options: ["29", "12", "50"], a: 0}
+            ],
+            "Ellora Caves": [
+                {q: "Religions?", options: ["Hindu only", "Hindu, Buddhist, Jain", "Sikh"], a: 1},
+                {q: "Kailasa is?", options: ["Cave 16", "Cave 1", "Cave 34"], a: 0},
+                {q: "Carved from?", options: ["Single rock", "Bricks", "Marble"], a: 0}
+            ],
+            "Konark Sun Temple": [
+                {q: "Shape?", options: ["Chariot", "Lotus", "Pyramid"], a: 0},
+                {q: "Wheels?", options: ["24", "12", "7"], a: 0},
+                {q: "Color?", options: ["Black Pagoda", "White", "Red"], a: 0}
+            ],
+            "Jantar Mantar": [
+                {q: "Built by?", options: ["Sawai Jai Singh", "Akbar", "Shah Jahan"], a: 0},
+                {q: "Purpose?", options: ["Astronomy", "War", "Dance"], a: 0},
+                {q: "Largest in?", options: ["Jaipur", "Delhi", "Ujjain"], a: 0}
+            ],
+            "Fatehpur Sikri": [
+                {q: "Built by?", options: ["Akbar", "Babur", "Humayun"], a: 0},
+                {q: "Abandoned due to?", options: ["Water shortage", "War", "Earthquake"], a: 0},
+                {q: "Famous gate?", options: ["Buland Darwaza", "India Gate", "Gateway of India"], a: 0}
+            ],
+            "Mahabodhi Temple": [
+                {q: "Where Buddha?", options: ["Enlightened", "Born", "Died"], a: 0},
+                {q: "Tree?", options: ["Bodhi Tree", "Banyan", "Peepal"], a: 0},
+                {q: "UNESCO?", options: ["2002", "1980", "2010"], a: 0}
+            ],
+            "Chhatrapati Shivaji Terminus": [
+                {q: "Style?", options: ["Victorian Gothic", "Mughal", "Modern"], a: 0},
+                {q: "Old name?", options: ["Victoria Terminus", "Bombay Central", "Churchgate"], a: 0},
+                {q: "Architect?", options: ["F.W. Stevens", "Lutyens", "Le Corbusier"], a: 0}
+            ]
+        };
+    </script>
+</body>
+</html>
